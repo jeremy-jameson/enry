@@ -289,7 +289,26 @@ func printFileAnalysis(file string, limit int64, isJSON bool) error {
 
 	// functions below can work on a sample
 	fileType := getFileType(file, data)
-	language := enry.GetLanguage(file, data)
+
+	// HACK: For the sole purpose of inferring the languages for code blocks in
+	// my blog posts (https://www.technologytoolbox.com/blog/jjameson),use a
+	// hard-coded list of languages for calling GetLanguageByClassifier. Note
+	// that if you don't pass any languages, GetLanguageByClassifier simply
+	// doesn't work (enry does *not* use -- or provide -- any sort of "default"
+	// or "all" language list)
+	var languages = []string{
+		"C#", "C++", "CSS", "CSV", "HTML", "INI", "JSON", "JavaScript",
+		"PowerShell", "Shell", "SQL", "Text", "TypeScript", "VBA", "VBScript",
+		"XML", "XSLT"}
+
+	// Note: The "safe" return parameter from GetLanguageByClassifier is always
+	// false when more than one language is specified :-(
+	//
+	// It would be nice if "safe" was based on some kind of "confidence level"
+	// when inferring the language from heuristics -- but it currently isn't...
+	// so just ignore the return parameter
+
+	language, _ := enry.GetLanguageByClassifier(data, languages)
 	mimeType := enry.GetMIMEType(file, language)
 	vendored := enry.IsVendor(file)
 
